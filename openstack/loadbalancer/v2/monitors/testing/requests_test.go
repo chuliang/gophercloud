@@ -76,6 +76,26 @@ func TestCreateHealthmonitor(t *testing.T) {
 	th.CheckDeepEquals(t, HealthmonitorDb, *actual)
 }
 
+func TestCreatePingHealthmonitor(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+	HandlePingHealthmonitorCreationSuccessfully(t, CreatePingHealthmonitorBody)
+
+	actual, err := monitors.Create(fake.ServiceClient(), monitors.CreateOpts{
+		Type:           "PING",
+		Name:           "web",
+		PoolID:         "84f1b61f-58c4-45bf-a8a9-2dafb9e5214d",
+		ProjectID:      "83657cfcdfe44cd5920adaf26c48ceea",
+		Delay:          10,
+		Timeout:        1,
+		MaxRetries:     1,
+		MaxRetriesDown: 7,
+	}).Extract()
+	th.AssertNoErr(t, err)
+
+	th.CheckDeepEquals(t, HealthmonitorWeb, *actual)
+}
+
 func TestRequiredCreateOpts(t *testing.T) {
 	res := monitors.Create(fake.ServiceClient(), monitors.CreateOpts{})
 	if res.Err == nil {

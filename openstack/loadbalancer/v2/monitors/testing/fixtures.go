@@ -70,6 +70,24 @@ const SingleHealthmonitorBody = `
 }
 `
 
+// CreatePingHealthmonitorBody is the canned body of a POST request to create a ping healthmonitor.
+const CreatePingHealthmonitorBody = `
+{
+	"healthmonitor": {
+		"admin_state_up":true,
+		"project_id":"83657cfcdfe44cd5920adaf26c48ceea",
+		"delay":10,
+		"name":"web",
+		"max_retries":1,
+		"max_retries_down":7,
+		"timeout":1,
+		"type":"PING",
+		"pools": [{"id": "84f1b61f-58c4-45bf-a8a9-2dafb9e5214d"}],
+		"id":"466c8345-28d8-4f84-a246-e04380b0461d"
+	}
+}
+`
+
 // PostUpdateHealthmonitorBody is the canned response body of a Update request on an existing healthmonitor.
 const PostUpdateHealthmonitorBody = `
 {
@@ -182,6 +200,31 @@ func HandleHealthmonitorCreationSuccessfully(t *testing.T, response string) {
 				"http_version": 1.1,
 				"url_path":"/check",
 				"expected_codes":"200-299"
+			}
+		}`)
+
+		w.WriteHeader(http.StatusAccepted)
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w, response)
+	})
+}
+
+// HandlePingHealthmonitorCreationSuccessfully sets up the test server to respond to a ping healthmonitor creation request
+// with a given response.
+func HandlePingHealthmonitorCreationSuccessfully(t *testing.T, response string) {
+	th.Mux.HandleFunc("/v2.0/lbaas/healthmonitors", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "POST")
+		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
+		th.TestJSONRequest(t, r, `{
+			"healthmonitor": {
+				"type":"PING",
+				"pool_id":"84f1b61f-58c4-45bf-a8a9-2dafb9e5214d",
+				"project_id":"83657cfcdfe44cd5920adaf26c48ceea",
+				"delay":10,
+				"name":"web",
+				"timeout":1,
+				"max_retries":1,
+				"max_retries_down":7
 			}
 		}`)
 
